@@ -65,33 +65,48 @@ face_short_board_length = PAINTING_Y
                           + TOTAL_INSULATION_THICKNESS * 2 
                           + PLYWOOD_THICKNESS * 2;
 
-face_middle_vertical_board_length = face_short_board_length - BOARD_WIDTH * 2;
+long_side_end_pieces = PAINTING_Z
+                       + TOTAL_INSULATION_THICKNESS * 2 
+                       + PLYWOOD_THICKNESS * 2;
 
-
-module crate_face() {
-    // Bottom board for the large sides of the crate.
-    board(face_long_board_length, rotate_horizontal=true);
+module create_piece(total_length, short_length) {
+    // Bottom board
+    board(total_length, rotate_horizontal=true);
     translate([0,BOARD_WIDTH,0]) {
-        // Two vertical boards
+        // Three vertical boards
         color("Red",1.0) {
-            board(face_short_board_length);
-            translate([face_long_board_length/2 - BOARD_WIDTH / 2,0,0])
-                board(face_short_board_length);
-            translate([face_long_board_length - BOARD_WIDTH,0,0])
-                board(face_short_board_length);
+            // Left
+            board(short_length);
+            // Middle
+            translate([total_length/2 - BOARD_WIDTH / 2,0,0])
+                board(short_length);
+            // Right
+            translate([total_length - BOARD_WIDTH,0,0])
+                board(short_length);
 
         }
-        // Top long board
-        translate([0,face_short_board_length,0])
-            board(face_long_board_length, rotate_horizontal=true);
+        // Top board
+        translate([0,short_length,0])
+            board(total_length, rotate_horizontal=true);
     }
+    // Plywood
     color("Green",1.0)
         translate([0,0,BOARD_THICKNESS])
-            plywood(face_long_board_length, 
-                    face_short_board_length + BOARD_WIDTH * 2);
+            plywood(total_length, 
+                    short_length + BOARD_WIDTH * 2);
 }
 
-crate_face();
+module crate_face() {
+    create_piece(face_long_board_length, face_short_board_length);
+}
+
+module crate_long_side() {
+    create_piece(face_long_board_length, long_side_end_pieces);
+}
+
+//crate_face();
+
+crate_long_side();
 
 // Bottom plywood piece
 //plywood(PAINTING_X + TOTAL_INSULATION_THICKNESS, 
