@@ -147,20 +147,29 @@ module foam_corner() {
     difference() {
         color("Olive",1.0)
         cube([FOAM_CORNER_X,FOAM_CORNER_Y,FOAM_CORNER_Z]);
-        translate([(FOAM_CORNER_X-FOAM_CORNER_INSIDE)/2,
-                   (FOAM_CORNER_Y-FOAM_CORNER_INSIDE)/2,
-                   (FOAM_CORNER_Z-FOAM_CORNER_INSIDE)/2])
-        cube([FOAM_CORNER_INSIDE*1.1,FOAM_CORNER_INSIDE*1.1,FOAM_CORNER_INSIDE]);
+        //translate([(FOAM_CORNER_X-FOAM_CORNER_INSIDE)/2,
+        //           (FOAM_CORNER_Y-FOAM_CORNER_INSIDE)/2,
+        //           (FOAM_CORNER_Z-FOAM_CORNER_INSIDE)/2])
+        //cube([FOAM_CORNER_INSIDE*1.4,FOAM_CORNER_INSIDE*1.1,FOAM_CORNER_INSIDE]);
     }
 }
 
 module painting() {
+    foam_corner_x_translate = PAINTING_X-(FOAM_CORNER_X-FOAM_CORNER_INSIDE);
+    foam_corner_y_translate = PAINTING_Y-(FOAM_CORNER_Y-FOAM_CORNER_INSIDE);
+    
     color("Goldenrod",1.0)
         translate([(FOAM_CORNER_X-FOAM_CORNER_INSIDE)/2,
                    (FOAM_CORNER_Y-FOAM_CORNER_INSIDE)/2,
                    (PAINTING_Z-FOAM_CORNER_INSIDE)/2])
         cube([PAINTING_X,PAINTING_Y,PAINTING_Z]);
     foam_corner();
+    translate([foam_corner_x_translate,0,0])
+        foam_corner();
+    translate([0,foam_corner_y_translate,0])
+        foam_corner();
+    translate([foam_corner_x_translate,foam_corner_y_translate,0])
+            foam_corner();
 }
 
 HIDE_ONE_FACE = true;
@@ -188,6 +197,15 @@ module crate() {
             crate_short_side();
 }
 
+module show_painting_on_face() {
+    crate_face();
+    translate([crate_piece_thickness,
+               crate_piece_thickness,
+               crate_piece_thickness+TOTAL_INSULATION_THICKNESS])
+        painting();
+}
+
 //crate();
-//crate_face();
-painting();
+
+show_painting_on_face();
+
