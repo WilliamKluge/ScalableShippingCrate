@@ -88,7 +88,7 @@ side_vertical_pieces = PAINTING_Z
 side_vertical_board_length = face_short_board_length 
                              + BOARD_WIDTH * 2
                              - crate_piece_thickness * 2
-                             + FOAM_CORNER_THICKNESS;
+                             + FOAM_CORNER_THICKNESS * 2;
                        
 // TODO just make an inner dimention variable and base everything off that
 
@@ -196,9 +196,11 @@ module crate() {
     translate([0,crate_piece_thickness*2+side_vertical_pieces+BOARD_WIDTH*2,0])
         rotate([90,0,0])
             crate_face();
+    // Bottom long side
     translate([0,crate_piece_thickness,0])
         crate_long_side();
-    translate([face_long_board_length,crate_piece_thickness,side_vertical_board_length+crate_piece_thickness*2])
+    // Top long side
+    translate([face_long_board_length,crate_piece_thickness,side_vertical_board_length+crate_piece_thickness])
         rotate([180,0,180])
             crate_long_side();
     if (!HIDE_ONE_SIDE)
