@@ -87,7 +87,8 @@ side_vertical_pieces = PAINTING_Z
                        
 side_vertical_board_length = face_short_board_length 
                              + BOARD_WIDTH * 2
-                             - crate_piece_thickness * 2;
+                             - crate_piece_thickness * 2
+                             + FOAM_CORNER_THICKNESS;
                        
 // TODO just make an inner dimention variable and base everything off that
 
@@ -172,20 +173,32 @@ module painting() {
             foam_corner();
 }
 
+module painting_on_face() {
+    crate_face();
+    translate([crate_piece_thickness+TOTAL_INSULATION_THICKNESS,
+               crate_piece_thickness+TOTAL_INSULATION_THICKNESS,
+               crate_piece_thickness+TOTAL_INSULATION_THICKNESS])
+        painting();
+}
+
 HIDE_ONE_FACE = true;
 HIDE_ONE_SIDE = true;
+SHOW_PAINTING = true;
 
 module crate() {
     translate([face_long_board_length,0,0])
         rotate([90,0,180])
-            crate_face();
+            if (SHOW_PAINTING)
+                painting_on_face();
+            else
+                crate_face();
     if (!HIDE_ONE_FACE)
     translate([0,crate_piece_thickness*2+side_vertical_pieces+BOARD_WIDTH*2,0])
         rotate([90,0,0])
             crate_face();
     translate([0,crate_piece_thickness,0])
         crate_long_side();
-    translate([face_long_board_length,crate_piece_thickness,face_short_board_length+BOARD_WIDTH*2])
+    translate([face_long_board_length,crate_piece_thickness,side_vertical_board_length+crate_piece_thickness*2])
         rotate([180,0,180])
             crate_long_side();
     if (!HIDE_ONE_SIDE)
@@ -197,15 +210,16 @@ module crate() {
             crate_short_side();
 }
 
-module show_painting_on_face() {
-    crate_face();
-    translate([crate_piece_thickness,
-               crate_piece_thickness,
-               crate_piece_thickness+TOTAL_INSULATION_THICKNESS])
-        painting();
+module check_for_intersections_with_crate() {
+    render()
+    difference() {
+        crate();
+        translate([face_long_board_length,0,0])
+            rotate([90,0,180])
+                painting_on_face();
+    }
 }
 
-//crate();
-
-show_painting_on_face();
-
+crate();
+//painting_on_face();
+//check_for_intersections_with_crate();
