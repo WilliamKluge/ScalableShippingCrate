@@ -8,6 +8,7 @@ PAINTING_Z = 4.25;
 
 // Dimensions of the foam corners put on the painting
 FOAM_CORNER_THICKNESS = 1.25;
+FOAM_CORNER_Z_THICKNESS = 1;
 FOAM_CORNER_X = 6;
 FOAM_CORNER_Y = 5 + 9/16;
 FOAM_CORNER_Z = 5 + 3/16;
@@ -60,6 +61,7 @@ module insulation(x, y, rotate_90=false) {
 //  Short Side: One of the sides of the crate that runs along the Y axis
 
 crate_piece_thickness = (BOARD_THICKNESS+PLYWOOD_THICKNESS);
+total_crate_piece_thickness = (BOARD_THICKNESS+PLYWOOD_THICKNESS+TOTAL_INSULATION_THICKNESS);
 
 // Accounts for:
 //  * The size of the painting
@@ -68,27 +70,22 @@ crate_piece_thickness = (BOARD_THICKNESS+PLYWOOD_THICKNESS);
 //  * Boards on both sides of the crate
 //  * Foam corners
 face_long_board_length = PAINTING_X 
-                         + TOTAL_INSULATION_THICKNESS * 2 
-                         + PLYWOOD_THICKNESS * 2 
-                         + BOARD_THICKNESS * 2 
+                         + total_crate_piece_thickness * 2 
                          + FOAM_CORNER_THICKNESS * 2;
 
 face_short_board_length = PAINTING_Y
-                          + TOTAL_INSULATION_THICKNESS * 2 
-                          + PLYWOOD_THICKNESS * 2 
-                          - crate_piece_thickness * 2
-                          + FOAM_CORNER_THICKNESS * 2;
+                          + crate_piece_thickness * 2;
 
 // Y axis side pieces
 side_vertical_pieces = PAINTING_Z
                        + PLYWOOD_THICKNESS * 2
                        - crate_piece_thickness * 2
                        + FOAM_CORNER_THICKNESS * 2;
-                       
+
+// Z axis crate pieces                       
 side_vertical_board_length = face_short_board_length 
                              + BOARD_WIDTH * 2
-                             - crate_piece_thickness * 2
-                             + FOAM_CORNER_THICKNESS * 2;
+                             - crate_piece_thickness * 2;
                        
 // TODO just make an inner dimention variable and base everything off that
 
@@ -131,7 +128,7 @@ module create_piece(total_length, short_length, insulation_type="side") {
 }
 
 module crate_face() {
-    create_piece(face_long_board_length, face_short_board_length,insulation_type="face");
+    create_piece(face_long_board_length, face_short_board_length, insulation_type="face");
     translate([0,BOARD_WIDTH / 2 + face_short_board_length / 2,-BOARD_THICKNESS])
         board(face_long_board_length, rotate_horizontal=true);
 }
@@ -155,34 +152,41 @@ module foam_corner() {
     }
 }
 
-module painting() {
-    foam_corner_x_translate = PAINTING_X-(FOAM_CORNER_X-FOAM_CORNER_INSIDE);
-    foam_corner_y_translate = PAINTING_Y-(FOAM_CORNER_Y-FOAM_CORNER_INSIDE);
-    
-    color("Goldenrod",1.0)
-        translate([(FOAM_CORNER_X-FOAM_CORNER_INSIDE)/2,
-                   (FOAM_CORNER_Y-FOAM_CORNER_INSIDE)/2,
-                   (FOAM_CORNER_Z-PAINTING_Z)/2])
-        cube([PAINTING_X,PAINTING_Y,PAINTING_Z]);
-    foam_corner();
-    translate([foam_corner_x_translate,0,0])
+module painting(show_corners_separately=false) {
+    if (show_corners_separately) {
+        foam_corner_x_translate = PAINTING_X-(FOAM_CORNER_X-FOAM_CORNER_INSIDE);
+        foam_corner_y_translate = PAINTING_Y-(FOAM_CORNER_Y-FOAM_CORNER_INSIDE);
+        
+        color("Goldenrod",1.0)
+            translate([(FOAM_CORNER_X-FOAM_CORNER_INSIDE)/2,
+                       (FOAM_CORNER_Y-FOAM_CORNER_INSIDE)/2,
+                       (FOAM_CORNER_Z-PAINTING_Z)/2])
+            cube([PAINTING_X,PAINTING_Y,PAINTING_Z]);
         foam_corner();
-    translate([0,foam_corner_y_translate,0])
-        foam_corner();
-    translate([foam_corner_x_translate,foam_corner_y_translate,0])
+        translate([foam_corner_x_translate,0,0])
             foam_corner();
+        translate([0,foam_corner_y_translate,0])
+            foam_corner();
+        translate([foam_corner_x_translate,foam_corner_y_translate,0])
+                foam_corner();
+    } else {
+        color("Goldenrod",1.0)
+            cube([PAINTING_X+FOAM_CORNER_THICKNESS,
+                  PAINTING_Y+FOAM_CORNER_THICKNESS,
+                  PAINTING_Z+FOAM_CORNER_Z_THICKNESS]);
+    }
 }
 
 module painting_on_face() {
     crate_face();
-    translate([crate_piece_thickness+TOTAL_INSULATION_THICKNESS,
-               crate_piece_thickness+TOTAL_INSULATION_THICKNESS,
-               crate_piece_thickness+TOTAL_INSULATION_THICKNESS+1/pow(10,10)])
+    translate([(face_long_board_length-PAINTING_X-FOAM_CORNER_THICKNESS)/2,
+               (face_short_board_length+BOARD_WIDTH*2-PAINTING_Y-FOAM_CORNER_THICKNESS)/2,
+               crate_piece_thickness+TOTAL_INSULATION_THICKNESS])
         painting();
 }
 
 HIDE_ONE_FACE = true;
-HIDE_ONE_SIDE = true;
+HIDE_ONE_SIDE = false;
 SHOW_PAINTING = true;
 
 module crate() {
@@ -200,7 +204,7 @@ module crate() {
     translate([0,crate_piece_thickness,0])
         crate_long_side();
     // Top long side
-    translate([face_long_board_length,crate_piece_thickness,side_vertical_board_length+crate_piece_thickness])
+    translate([face_long_board_length,crate_piece_thickness,side_vertical_board_length+total_crate_piece_thickness+PLYWOOD_THICKNESS])
         rotate([180,0,180])
             crate_long_side();
     if (!HIDE_ONE_SIDE)
@@ -223,6 +227,7 @@ module check_for_intersections_with_crate() {
 }
 
 //painting();
-crate();
-//painting_on_face();
+//crate();
+painting_on_face();
 //check_for_intersections_with_crate();
+//crate_short_side();
