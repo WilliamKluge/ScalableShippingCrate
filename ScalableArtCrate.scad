@@ -108,6 +108,8 @@ module create_piece(total_length, short_length) {
 
 module crate_face() {
     create_piece(face_long_board_length, face_short_board_length);
+    translate([0,BOARD_WIDTH / 2 + face_short_board_length / 2,-BOARD_THICKNESS])
+        board(face_long_board_length, rotate_horizontal=true);
 }
 
 module crate_long_side() {
@@ -133,8 +135,9 @@ module crate() {
     translate([0,crate_piece_thickness,side_vertical_board_length+crate_piece_thickness])
         rotate([0,90,0])
             crate_short_side();
+    translate([face_long_board_length,crate_piece_thickness,crate_piece_thickness])
+        rotate([0,-90,0])
+            crate_short_side();
 }
-
-//crate_face();
 
 crate();
