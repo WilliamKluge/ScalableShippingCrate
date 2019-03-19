@@ -51,6 +51,8 @@ module plywood(x, y, rotate_90=false) {
 //  Long Side: One of the sides of the crate that runs along the X axis
 //  Short Side: One of the sides of the crate that runs along the Y axis
 
+crate_piece_thickness = (BOARD_THICKNESS+PLYWOOD_THICKNESS);
+
 // Accounts for:
 //  * The size of the painting
 //  * Insulation on both sides of the painting
@@ -63,11 +65,19 @@ face_long_board_length = PAINTING_X
 
 face_short_board_length = PAINTING_Y
                           + TOTAL_INSULATION_THICKNESS * 2 
-                          + PLYWOOD_THICKNESS * 2;
+                          + PLYWOOD_THICKNESS * 2 
+                          - crate_piece_thickness * 2;
 
-long_side_end_pieces = PAINTING_Z
-                       + TOTAL_INSULATION_THICKNESS * 2 
-                       + PLYWOOD_THICKNESS * 2;
+side_vertical_pieces = PAINTING_Z
+                       + TOTAL_INSULATION_THICKNESS * 2
+                       + PLYWOOD_THICKNESS * 2
+                       - crate_piece_thickness;
+                       
+side_vertical_board_length = face_short_board_length 
+                             + BOARD_WIDTH * 2
+                             - crate_piece_thickness * 2;
+                       
+// TODO just make an inner dimention variable and base everything off that
 
 module create_piece(total_length, short_length) {
     // Bottom board
@@ -101,15 +111,30 @@ module crate_face() {
 }
 
 module crate_long_side() {
-    create_piece(face_long_board_length, long_side_end_pieces);
+    create_piece(face_long_board_length, side_vertical_pieces);
+}
+
+module crate_short_side() {
+    create_piece(side_vertical_board_length, side_vertical_pieces);
+}
+
+module crate() {
+    translate([face_long_board_length,0,0])
+        rotate([90,0,180])
+            crate_face();
+    translate([0,crate_piece_thickness*2+side_vertical_pieces+BOARD_WIDTH*2,0])
+        rotate([90,0,0])
+            crate_face();
+    translate([0,crate_piece_thickness,0])
+        crate_long_side();
+    translate([face_long_board_length,crate_piece_thickness,face_short_board_length+BOARD_WIDTH*2])
+        rotate([180,0,180])
+            crate_long_side();
+    translate([0,crate_piece_thickness,side_vertical_board_length+crate_piece_thickness])
+        rotate([0,90,0])
+            crate_short_side();
 }
 
 //crate_face();
 
-crate_long_side();
-
-// Bottom plywood piece
-//plywood(PAINTING_X + TOTAL_INSULATION_THICKNESS, 
-//        PAINTING_Y + TOTAL_INSULATION_THICKNESS);
-
-
+crate();
