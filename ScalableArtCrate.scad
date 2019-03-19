@@ -79,10 +79,10 @@ face_short_board_length = PAINTING_Y
                           - crate_piece_thickness * 2
                           + FOAM_CORNER_THICKNESS * 2;
 
+// Y axis side pieces
 side_vertical_pieces = PAINTING_Z
-                       + TOTAL_INSULATION_THICKNESS * 2
                        + PLYWOOD_THICKNESS * 2
-                       - crate_piece_thickness
+                       - crate_piece_thickness * 2
                        + FOAM_CORNER_THICKNESS * 2;
                        
 side_vertical_board_length = face_short_board_length 
@@ -162,7 +162,7 @@ module painting() {
     color("Goldenrod",1.0)
         translate([(FOAM_CORNER_X-FOAM_CORNER_INSIDE)/2,
                    (FOAM_CORNER_Y-FOAM_CORNER_INSIDE)/2,
-                   (PAINTING_Z-FOAM_CORNER_INSIDE)/2])
+                   (FOAM_CORNER_Z-PAINTING_Z)/2])
         cube([PAINTING_X,PAINTING_Y,PAINTING_Z]);
     foam_corner();
     translate([foam_corner_x_translate,0,0])
@@ -177,7 +177,7 @@ module painting_on_face() {
     crate_face();
     translate([crate_piece_thickness+TOTAL_INSULATION_THICKNESS,
                crate_piece_thickness+TOTAL_INSULATION_THICKNESS,
-               crate_piece_thickness+TOTAL_INSULATION_THICKNESS])
+               crate_piece_thickness+TOTAL_INSULATION_THICKNESS+1/pow(10,10)])
         painting();
 }
 
@@ -222,6 +222,7 @@ module check_for_intersections_with_crate() {
     }
 }
 
+//painting();
 crate();
 //painting_on_face();
 //check_for_intersections_with_crate();
