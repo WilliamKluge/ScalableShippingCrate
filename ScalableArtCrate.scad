@@ -15,9 +15,9 @@ FOAM_CORNER_Z = 5 + 3/16;
 FOAM_CORNER_INSIDE = 3.25;
 
 // The total thickness of any foam used to insulate around the painting in the crate
-// I'm using 2" thick ridgid insulation foam around all walls
+// I'm using either 2" or 3/8" thick ridgid insulation foam or around all walls
 // then filling in gaps with 3/32" packing foam
-TOTAL_INSULATION_THICKNESS = 2;
+TOTAL_INSULATION_THICKNESS = 3/32;
 
 // Dimentions of the board being used as the structure of the crate
 BOARD_WIDTH = 3.5;
@@ -41,18 +41,21 @@ module board (length, rotate_vertical=false, rotate_horizontal=false) {
     translate([x_translate, 0, 0])
         rotate([0,(rotate_vertical) ? -90 : 0,(rotate_horizontal) ? 90 : 0])
             cube([BOARD_WIDTH, length, BOARD_THICKNESS]);
+    echo(Board=length);
 }
 
 module plywood(x, y, rotate_90=false) {
     translate([(rotate_90) ? PLYWOOD_THICKNESS : 0,0,0])
         rotate([0,(rotate_90) ? -90 : 0,0])
             cube([x, y, PLYWOOD_THICKNESS]);
+    //echo(Plywood_x=x, Plywood_y=y);
 }
 
 module insulation(x, y, rotate_90=false) {
     translate([(rotate_90) ? TOTAL_INSULATION_THICKNESS : 0,0,0])
         rotate([0,(rotate_90) ? -90 : 0,0])
             cube([x, y, TOTAL_INSULATION_THICKNESS]);
+    //echo(Foam_sq_inches=x*y);
 }
 
 // Terminology:
@@ -71,14 +74,14 @@ total_crate_piece_thickness = (BOARD_THICKNESS+PLYWOOD_THICKNESS+TOTAL_INSULATIO
 //  * Foam corners
 face_long_board_length = PAINTING_X 
                          + total_crate_piece_thickness * 2 
-                         + FOAM_CORNER_THICKNESS * 2;
+                         + FOAM_CORNER_THICKNESS * 2
+;
 
 face_short_board_length = PAINTING_Y
-                          + crate_piece_thickness * 2;
+                          + FOAM_CORNER_THICKNESS * 2;
 
 // Y axis side pieces
 side_vertical_pieces = PAINTING_Z
-                       + PLYWOOD_THICKNESS * 2
                        - crate_piece_thickness * 2
                        + FOAM_CORNER_THICKNESS * 2;
 
@@ -194,9 +197,9 @@ module foam_corner() {
 }
 
 HIDE_ONE_FACE = false;
-HIDE_ONE_SIDE = true;
+HIDE_ONE_SIDE = false;
 HIDE_ONE_TOP  = false;
-SHOW_PAINTING = true;
+SHOW_PAINTING = false;
 
 module crate() {
     translate([face_long_board_length,0,0])
